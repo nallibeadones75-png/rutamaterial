@@ -22,3 +22,5 @@ Sin la clave, la app funciona igual (ejemplo, catálogo, plan, mapa), pero las f
 ## Privacidad
 
 La app no tiene cuentas ni base de datos: proyectos, chat y ajustes quedan en el navegador de cada persona. El texto que se escribe para la IA se envía a Anthropic a través de la función del servidor.
+
+Demo pública: https://rutamaterial.netlify.app
