@@ -17,8 +17,7 @@ export default async (req, context) => {
   const host = req.headers.get("host");
   if (origin && host && new URL(origin).host !== host) return json({ error: "Origen no permitido" }, 403);
 
-  const key = Netlify.env.get("ANTHROPIC_API_KEY");
-  const gkey = Netlify.env.get("GEMINI_API_KEY");
+  let key = Netlify.env.get("ANTHROPIC_API_KEY"); let gkey = Netlify.env.get("GEMINI_API_KEY"); if (key && key.trim().startsWith("AIza")) { gkey = gkey || key; key = null; } if (gkey) key = null;
   if (!key && !gkey) return json({ error: "Falta configurar la clave de IA en Netlify" }, 500);
 
   // Límite simple por visitante
