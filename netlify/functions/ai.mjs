@@ -18,7 +18,8 @@ export default async (req, context) => {
   if (origin && host && new URL(origin).host !== host) return json({ error: "Origen no permitido" }, 403);
 
   const key = Netlify.env.get("ANTHROPIC_API_KEY");
-  if (!key) return json({ error: "Falta configurar ANTHROPIC_API_KEY en Netlify" }, 500);
+  const gkey = Netlify.env.get("GEMINI_API_KEY");
+  if (!key && !gkey) return json({ error: "Falta configurar la clave de IA en Netlify" }, 500);
 
   // Límite simple por visitante
   const ip = context.ip || "anon";
@@ -33,6 +34,23 @@ export default async (req, context) => {
   const prompt = String((body && body.prompt) || "");
   if (!prompt) return json({ error: "Falta el texto de la consulta" }, 400);
   if (prompt.length > MAX_PROMPT) return json({ error: "La consulta es demasiado larga" }, 413);
+
+  if (!key) {
+    try {
+      const model = Netlify.env.get("GEMINI_MODEL") || "gemini-2.5-flash";
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-goog-api-key": gkey },
+        body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 8000 } }),
+      });
+      const j = await r.json();
+      if (!r.ok) return json({ error: (j && j.error && j.error.message) || "La IA no respondió" }, r.status === 429 ? 429 : 502);
+      const parts = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
+      return json({ text: parts.map((p) => p.text || "").join("") });
+    } catch (e) {
+      return json({ error: "No se pudo conectar con la IA" }, 502);
+    }
+  }
 
   try {
     const r = await fetch("https://api.anthropic.com/v1/messages", {
