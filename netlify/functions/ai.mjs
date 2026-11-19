@@ -36,7 +36,7 @@ export default async (req, context) => {
 
   if (!key) {
     try {
-      let r, j; for (const model of [Netlify.env.get("GEMINI_MODEL"), "gemini-3.8-flash", "gemini-3.8-flash-lite", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-2.0-flash"].filter(Boolean)) {
+      let r, j; for (const model of [Netlify.env.get("GEMINI_MODEL"), "gemini-3.8-flash-lite", "gemini-flash-lite-latest", "gemini-3.8-flash", "gemini-flash-latest"].filter(Boolean)) {
       r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
         method: "POST",
         headers: { "content-type": "application/json", "x-goog-api-key": gkey },
