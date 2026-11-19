@@ -36,7 +36,7 @@ export default async (req, context) => {
 
   if (!key) {
     try {
-      const model = Netlify.env.get("GEMINI_MODEL") || "gemini-2.5-flash";
+      const model = Netlify.env.get("GEMINI_MODEL") || "gemini-3.8-flash";
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
         method: "POST",
         headers: { "content-type": "application/json", "x-goog-api-key": gkey },
