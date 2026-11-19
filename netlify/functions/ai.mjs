@@ -36,13 +36,13 @@ export default async (req, context) => {
 
   if (!key) {
     try {
-      const model = Netlify.env.get("GEMINI_MODEL") || "gemini-3.8-flash";
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+      let r, j; for (const model of [Netlify.env.get("GEMINI_MODEL"), "gemini-3.8-flash", "gemini-3.8-flash-lite", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-2.0-flash"].filter(Boolean)) {
+      r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
         method: "POST",
         headers: { "content-type": "application/json", "x-goog-api-key": gkey },
         body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 8000 } }),
       });
-      const j = await r.json();
+      j = await r.json(); if (r.ok || ![404, 429, 500, 503].includes(r.status)) break; }
       if (!r.ok) return json({ error: (j && j.error && j.error.message) || "La IA no respondió" }, r.status === 429 ? 429 : 502);
       const parts = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
       return json({ text: parts.map((p) => p.text || "").join("") });
